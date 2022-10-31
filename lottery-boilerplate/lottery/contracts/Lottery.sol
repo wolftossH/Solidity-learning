@@ -8,18 +8,24 @@ contract Lottery {
     //     manager = msg.sender;
     // }
     
+    constructor() public {
+        manager = msg.sender;
+    }
+
     function enter() public payable {
         require(msg.value > .01 ether);
         players.push(msg.sender);
     }
     
     function random() private view returns (uint) {
-        return uint(keccak256(block.difficulty, now, players));
+        return  uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty, players)));
     }
     
     function pickWinner() public restricted {
         uint index = random() % players.length;
-        players[index].transfer(this.balance);
+        // players[index].transfer(address(this).balance);
+        payable(players[index]).transfer(address(this).balance);
+
         players = new address[](0);
     }
     
@@ -28,7 +34,7 @@ contract Lottery {
         _;
     }
     
-    function getPlayers() public view returns (address[]) {
+    function getPlayers() public view returns (address[] memory) {
         return players;
     }
 }   
